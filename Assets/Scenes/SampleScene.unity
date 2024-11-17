@@ -186,9 +186,10 @@ MonoBehaviour:
   grassland: {fileID: 11400000, guid: 2a8e200862ad30e4ba5b7b3465eedd64, type: 2}
   grassland2: {fileID: 11400000, guid: b9205ea0fddc5884b8001cc64f86aa6b, type: 2}
   mapScale: 0.01
-  chunkSize: 32
+  chunkSize: 16
+  worldSizeInChunks: 10
   octaves: 3
-  pointNum: 3
+  pointNum: 2
 --- !u!483693784 &339680637
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -500,7 +501,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 387044486}
   offset: {x: 0, y: 0, z: -5}
-  smoothSpeed: 0.125
+  zoomLevel: 5
 --- !u!1 &530936951
 GameObject:
   m_ObjectHideFlags: 0

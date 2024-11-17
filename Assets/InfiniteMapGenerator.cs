@@ -1,15 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public enum Biome : int
 {
-    Snow = 0, Cave = 1, Ocean = 2, Desert = 3, Forest = 4, Swamp = 5, Lava = 6, Grassland = 7, MAX
+    Snow = 0,
+    Cave = 1,
+    Ocean = 2,
+    Desert = 3,
+    Forest = 4,
+    Swamp = 5,
+    Lava = 6,
+    Grassland = 7,
+    MAX
 }
 
-public class InfiniteMapGenerator : MonoBehaviour
+public class ChunkLoader : MonoBehaviour
 {
     [Header("타일맵 관련")]
     [SerializeField] private Tilemap tileMap;
@@ -35,88 +42,141 @@ public class InfiniteMapGenerator : MonoBehaviour
     [Space]
     [Header("값 관련")]
     [SerializeField] private float mapScale = 0.01f; // 노이즈 스케일
-    [SerializeField] private int chunkSize = 32; // 하나의 청크 크기
+    [SerializeField] private int chunkSize = 16; // 하나의 청크 크기
+    [SerializeField] private int worldSizeInChunks = 10; // 전체 월드 크기 (청크 단위)
+
     [SerializeField] private int octaves = 3; // 노이즈 옥타브 수
-    [SerializeField] private int pointNum = 3; // 랜덤 포인트 개수
-
+    [SerializeField] private int pointNum = 2; // 랜덤 포인트 개수
     private float seed; // 시드 값
-    private Vector3Int previousPlayerChunk; // 이전 플레이어 위치의 청크 좌표
-    private Dictionary<Vector3Int, bool> generatedChunks = new Dictionary<Vector3Int, bool>(); // 이미 생성된 청크 캐싱
-    // 타일 캐싱을 위한 딕셔너리 추가 (타일 재생성 방지)
-    private Dictionary<Vector3Int, TileBase> tileCache = new Dictionary<Vector3Int, TileBase>();
 
-   private void Start()
-    {
-        seed = Random.Range(0f, 10000f); // 시드 값 초기화
-        previousPlayerChunk = GetPlayerChunkPosition();
-        GenerateChunk(previousPlayerChunk); // 시작할 때 플레이어 주변 청크를 생성
-        StartCoroutine(UpdateChunks()); // 플레이어 이동에 따라 청크 업데이트
+   // 청크 캐싱을 위한 딕셔너리 (로드된 청크 관리)
+   private Dictionary<Vector3Int, bool> loadedChunks = new Dictionary<Vector3Int, bool>();
+   // 타일 캐싱을 위한 딕셔너리 (타일 재생성 방지)
+   private Dictionary<Vector3Int, TileBase> tileCache = new Dictionary<Vector3Int, TileBase>();
 
-        // 카메라 확대/축소 조정 (타일맵 해상도에 맞춤)
-        Camera.main.orthographicSize = (Screen.height / 2f) / tileMap.cellSize.y;
-    }
-
-    // 플레이어의 현재 청크 좌표를 가져오는 함수
-    private Vector3Int GetPlayerChunkPosition()
-    {
-        Vector3 playerPosition = Camera.main.transform.position; // 카메라를 기준으로 플레이어 위치 추적
-        return new Vector3Int(Mathf.FloorToInt(playerPosition.x / chunkSize), Mathf.FloorToInt(playerPosition.y / chunkSize), 0);
-    }
-
-    // 플레이어 이동에 따라 청크를 업데이트하는 코루틴 함수
-    private IEnumerator UpdateChunks()
-    {
-        while (true)
-        {
-            Vector3Int currentPlayerChunk = GetPlayerChunkPosition();
-
-            if (currentPlayerChunk != previousPlayerChunk)
-            {
-                GenerateSurroundingChunks(currentPlayerChunk);
-                previousPlayerChunk = currentPlayerChunk;
-            }
-
-            yield return new WaitForSeconds(0.5f); // 0.5초마다 체크
-        }
-    }
-
-    // 현재 플레이어 주변 청크들을 생성하는 함수
-    private void GenerateSurroundingChunks(Vector3Int centerChunk)
-    {
-        for (int xOffset = -1; xOffset <= 1; xOffset++)
-        {
-            for (int yOffset = -1; yOffset <= 1; yOffset++)
-            {
-                Vector3Int chunkPos = new Vector3Int(centerChunk.x + xOffset, centerChunk.y + yOffset, 0);
-
-                if (!generatedChunks.ContainsKey(chunkPos)) // 아직 생성되지 않은 청크만 생성
-                {
-                    GenerateChunk(chunkPos);
-                    generatedChunks[chunkPos] = true;
-                }
-            }
-        }
-    }
-
-    // 특정 청크를 생성하는 함수
-   private void GenerateChunk(Vector3Int chunkPos)
+   void Start()
    {
-       float[,] noiseArr = GenerateNoise(chunkPos);
-       Vector2[] randomPoints = GenerateRandomPos(pointNum);
-       Vector2[] biomePoints = GenerateRandomPos((int)Biome.MAX);
-       Biome[,] biomeArr = GenerateBiome(randomPoints, biomePoints);
+       seed = Random.Range(0f, 10000f); // 시드 값 초기화
+       GenerateFullMap(); // 전체 맵을 한 번에 생성
+       StartCoroutine(UpdateChunks()); // 플레이어 이동에 따라 청크 업데이트
+   }
 
-       for (int x = 0; x < chunkSize; x++)
+   // 전체 맵을 한 번에 모두 생성하는 함수
+   private void GenerateFullMap()
+   {
+       for (int chunkX = 0; chunkX < worldSizeInChunks; chunkX++)
        {
-           for (int y = 0; y < chunkSize; y++)
+           for (int chunkY = 0; chunkY < worldSizeInChunks; chunkY++)
            {
-               Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
+               Vector3Int chunkPos = new Vector3Int(chunkX, chunkY, 0);
+               LoadChunk(chunkPos);
+           }
+       }
+   }
 
-               if (!tileCache.ContainsKey(tilePos)) // 이미 생성된 타일은 다시 생성하지 않음
+   // 플레이어의 현재 청크 좌표를 가져오는 함수
+   private Vector3Int GetPlayerChunkPosition()
+   {
+       Vector3 playerPosition = Camera.main.transform.position;
+
+       return new Vector3Int(
+           Mathf.FloorToInt(playerPosition.x / chunkSize),
+           Mathf.FloorToInt(playerPosition.y / chunkSize),
+           0
+       );
+   }
+
+   // 플레이어 이동에 따라 청크를 업데이트하는 코루틴 함수
+   private IEnumerator UpdateChunks()
+   {
+       while (true)
+       {
+           Vector3Int currentPlayerChunk = GetPlayerChunkPosition();
+           LoadSurroundingChunks(currentPlayerChunk); // 새로운 주변 청크 로드
+           UnloadDistantChunks(currentPlayerChunk); // 멀어진 청크 언로드
+
+           yield return new WaitForSeconds(0.5f); // 0.5초마다 체크
+       }
+   }
+
+   // 주변 청크들을 로드하는 함수
+   private void LoadSurroundingChunks(Vector3Int centerChunk)
+   {
+       for (int xOffset = -1; xOffset <= 1; xOffset++)
+       {
+           for (int yOffset = -1; yOffset <= 1; yOffset++)
+           {
+               Vector3Int chunkPos = new Vector3Int(centerChunk.x + xOffset, centerChunk.y + yOffset, 0);
+
+               if (!loadedChunks.ContainsKey(chunkPos)) 
                {
-                   TileBase tile = GetTileByHight(noiseArr[x, y], biomeArr[x, y]);
-                   tileMap.SetTile(tilePos, tile);
-                   tileCache[tilePos] = tile; // 캐싱하여 재생성 방지
+                   LoadChunk(chunkPos);
+                   loadedChunks[chunkPos] = true;
+               }
+           }
+       }
+   }
+
+   // 멀어진 청크들을 언로드하는 함수
+   private void UnloadDistantChunks(Vector3Int centerChunk)
+   {
+       List<Vector3Int> chunksToUnload = new List<Vector3Int>();
+
+       foreach (var chunk in loadedChunks.Keys)
+       {
+           if (Vector3Int.Distance(chunk, centerChunk) > 2) // 일정 거리 이상 떨어진 청크는 언로드
+           {
+               chunksToUnload.Add(chunk);
+           }
+       }
+
+       foreach (var chunk in chunksToUnload)
+       {
+           UnloadChunk(chunk);
+           loadedChunks.Remove(chunk);
+       }
+   }
+
+   // 특정 청크를 로드하는 함수 (타일 캐싱 적용)
+   private void LoadChunk(Vector3Int chunkPos)
+   {
+       if (!loadedChunks.ContainsKey(chunkPos))
+       {
+           float[,] noiseArr = GenerateNoise(chunkPos);
+           Vector2[] randomPoints = GenerateRandomPos(pointNum); 
+           Vector2[] biomePoints = GenerateRandomPos((int)Biome.MAX);
+           Biome[,] biomeArr = GenerateBiome(randomPoints, biomePoints);
+
+           for (int x=0;x<chunkSize;x++)
+           {
+               for (int y=0;y<chunkSize;y++)
+               {
+                   Vector3Int tilePos=new Vector3Int(chunkPos.x*chunkSize+x,chunkPos.y*chunkSize+y,0);
+
+                   if(!tileCache.ContainsKey(tilePos))
+                   {
+                       TileBase tile=GetTileByHight(noiseArr[x,y],biomeArr[x,y]);
+                       tileMap.SetTile(tilePos,tile);
+                       tileCache[tilePos]=tile;
+                   }
+               }
+           }
+       }
+   }
+
+   // 특정 청크를 언로드하는 함수 (타일맵에서 제거)
+   private void UnloadChunk(Vector3Int chunkPos)
+   {
+       for (int x=0;x<chunkSize;x++)
+       {
+           for (int y=0;y<chunkSize;y++)
+           {
+               Vector3Int tilePos=new Vector3Int(chunkPos.x*chunkSize+x,chunkPos.y*chunkSize+y,0);
+
+               if(tileCache.ContainsKey(tilePos))
+               {
+                   tileMap.SetTile(tilePos,null); // 타일맵에서 제거
+                   tileCache.Remove(tilePos); 
                }
            }
        }
