@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e33068389d76f3647b13e562aab144f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileMap: {fileID: 339680638}
+  tileMapPrefab: {fileID: 339680634}
   snow: {fileID: 11400000, guid: 38a7e28b1cf520d4e9ac9d6b6865ce33, type: 2}
   snow2: {fileID: 11400000, guid: 85ee5875183e1eb42b836741867288fd, type: 2}
   cave: {fileID: 11400000, guid: d37f0bdf58470e44f84c2627e36b4ee1, type: 2}
@@ -186,9 +186,8 @@ MonoBehaviour:
   grassland: {fileID: 11400000, guid: 2a8e200862ad30e4ba5b7b3465eedd64, type: 2}
   grassland2: {fileID: 11400000, guid: b9205ea0fddc5884b8001cc64f86aa6b, type: 2}
   mapScale: 0.01
-  mapSize: 256
-  octaves: 3
-  pointNum: 10
+  chunkSize: 4
+  viewDistance: 3
 --- !u!483693784 &339680637
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -305,7 +304,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 135.8, y: 268.8, z: -0.1}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1035124997}
