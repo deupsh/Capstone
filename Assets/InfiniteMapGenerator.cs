@@ -3,50 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public enum Biome : int
-{
-    Snow = 0,
-    Cave = 1,
-    Ocean = 2,
-    Desert = 3,
-    Forest = 4,
-    Swamp = 5,
-    Lava = 6,
-    Grassland = 7,
-    MAX
+// 각 숫자가 지형을 의미
+public enum Biome : int {
+    Snow = 0, Cave = 1, Ocean = 2, Desert = 3, Forest = 4, Swamp = 5, Lava = 6, Grassland = 7, MAX          
 }
 
-public class ChunkLoader : MonoBehaviour
-{
+public class ChunkLoader : MonoBehaviour {
+    
     [Header("타일맵 관련")]
-    [SerializeField] private Tilemap tileMap;
+    [SerializeField] private Tilemap tileMap; // 타일맵 참조
 
     [Space]
+    
     [Header("눈 지형")]
-    [SerializeField] private TileBase snow, snow2;
+    [SerializeField] private TileBase snow, snow2; // 눈 타일
     [Header("동굴 지형")]
-    [SerializeField] private TileBase cave, cave2;
+    [SerializeField] private TileBase cave, cave2; // 동굴 타일
     [Header("바다 지형")]
-    [SerializeField] private TileBase ocean, ocean2;
+    [SerializeField] private TileBase ocean, ocean2; // 바다 타일
     [Header("사막 지형")]
-    [SerializeField] private TileBase desert, desert2;
+    [SerializeField] private TileBase desert, desert2; // 사막 타일
     [Header("숲 지형")]
-    [SerializeField] private TileBase forest, forest2;
+    [SerializeField] private TileBase forest, forest2; // 숲 타일
     [Header("습지 지형")]
-    [SerializeField] private TileBase swamp, swamp2;
+    [SerializeField] private TileBase swamp, swamp2; // 습지 타일
     [Header("용암 지형")]
-    [SerializeField] private TileBase lava, lava2;
+    [SerializeField] private TileBase lava, lava2; // 용암 타일
     [Header("초원 지형")]
-    [SerializeField] private TileBase grassland, grassland2;
+    [SerializeField] private TileBase grassland, grassland2; // 초원 지역 타일들
 
     [Space]
     [Header("값 관련")]
-    [SerializeField] private float mapScale = 0.01f; // 노이즈 스케일
-    [SerializeField] private int chunkSize = 16; // 하나의 청크 크기
-    [SerializeField] private int worldSizeInChunks = 10; // 전체 월드 크기 (청크 단위)
+    [SerializeField] private float mapScale = 0.01f; // 노이즈 : 자연스럽게 랜덤한 맵 생성
+    [SerializeField] private int chunkSize = 16; // 청크 크기
+    [SerializeField] private int worldSizeInChunks = 10; // 최초 생성 월드 크기
 
-    [SerializeField] private int octaves = 3; // 노이즈 옥타브 수
-    [SerializeField] private int pointNum = 2; // 랜덤 포인트 개수
+    [SerializeField] private int octaves = 3; // 옥타브 : 지형의 세부적 복잡도
+    [SerializeField] private int pointNum = 2; // 바이옴 크기랑 반비례 (클수록 바이옴 크기가 작아짐)
     private float seed; // 시드 값
 
    // 청크 캐싱을 위한 딕셔너리 (로드된 청크 관리)
@@ -61,7 +54,7 @@ public class ChunkLoader : MonoBehaviour
        StartCoroutine(UpdateChunks()); // 플레이어 이동에 따라 청크 업데이트
    }
 
-   // 전체 맵을 한 번에 모두 생성하는 함수
+   // 최초 생성맵을 생성하는 함수
    private void GenerateFullMap()
    {
        for (int chunkX = 0; chunkX < worldSizeInChunks; chunkX++)
@@ -86,7 +79,7 @@ public class ChunkLoader : MonoBehaviour
        );
    }
 
-   // 플레이어 이동에 따라 청크를 업데이트하는 코루틴 함수
+   // 플레이어 이동에 따라 청크를 업데이트하는 함수
    private IEnumerator UpdateChunks()
    {
        while (true)
@@ -110,7 +103,7 @@ public class ChunkLoader : MonoBehaviour
 
                if (!loadedChunks.ContainsKey(chunkPos)) 
                {
-                   LoadChunk(chunkPos);
+                   LoadChunk(chunkPos); // 주변 청크가 로드되지 않았으면 로드
                    loadedChunks[chunkPos] = true;
                }
            }
@@ -138,26 +131,23 @@ public class ChunkLoader : MonoBehaviour
    }
 
    // 특정 청크를 로드하는 함수 (타일 캐싱 적용)
-   private void LoadChunk(Vector3Int chunkPos)
-   {
-       if (!loadedChunks.ContainsKey(chunkPos))
-       {
-           float[,] noiseArr = GenerateNoise(chunkPos);
-           Vector2[] randomPoints = GenerateRandomPos(pointNum); 
-           Vector2[] biomePoints = GenerateRandomPos((int)Biome.MAX);
-           Biome[,] biomeArr = GenerateBiome(randomPoints, biomePoints);
+   private void LoadChunk(Vector3Int chunkPos) {
+       if (!loadedChunks.ContainsKey(chunkPos)) {         // 이미 로드된 청크가 아니면 처리 시작
 
-           for (int x=0;x<chunkSize;x++)
-           {
-               for (int y=0;y<chunkSize;y++)
-               {
+           float[,] noiseArr = GenerateNoise(chunkPos);   // 노이즈 배열 생성 (지형 높이 정보)
+           Vector2[] randomPoints = GenerateRandomPos(pointNum);   // 랜덤 포인트 생성 (바이옴 결정용)
+           Vector2[] biomePoints = GenerateRandomPos((int)Biome.MAX);   // 바이옴 포인트 생성
+
+           Biome[,] biomeArr = GenerateBiome(randomPoints, biomePoints);   // 바이옴 배열 생성
+
+           for (int x=0;x<chunkSize;x++) {               // 각 타일 위치에 대해 처리 시작 
+               for (int y=0;y<chunkSize;y++) {
                    Vector3Int tilePos=new Vector3Int(chunkPos.x*chunkSize+x,chunkPos.y*chunkSize+y,0);
-
-                   if(!tileCache.ContainsKey(tilePos))
-                   {
-                       TileBase tile=GetTileByHight(noiseArr[x,y],biomeArr[x,y]);
-                       tileMap.SetTile(tilePos,tile);
-                       tileCache[tilePos]=tile;
+                   
+                   if(!tileCache.ContainsKey(tilePos)) {   // 해당 위치에 타일이 없으면 새로 설정
+                       TileBase tile=GetTileByHight(noiseArr[x,y],biomeArr[x,y]);   // 높이와 바이옴에 따라 적절한 타일 선택
+                       tileMap.SetTile(tilePos,tile);      // 타일맵에 타일 설정
+                       tileCache[tilePos]=tile;            // 캐시에 저장하여 재생성 방지
                    }
                }
            }
