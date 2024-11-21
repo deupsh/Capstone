@@ -87,9 +87,7 @@ public class InfiniteMapGenerator : MonoBehaviour
     private Dictionary<Vector3Int, TileBase> tileCache = new Dictionary<Vector3Int, TileBase>(); // 타일 캐싱 (재생성 방지)
 
 
-    /// <summary>
-    /// 게임 시작 시 호출되는 함수
-    /// </summary>
+    ///게임 시작 시 호출되는 함수
     void Start()
     {
         //seed = Random.Range(0f, 10000f); // 시드 값 초기화
@@ -128,31 +126,34 @@ public class InfiniteMapGenerator : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// JSON 파일에서 맵 데이터를 불러오는 함수
-    /// </summary>
+    // JSON 파일에서 맵 데이터를 불러오는 함수
     public void LoadMap()
     {
         string path = Application.persistentDataPath + "/mapdata.json";
-
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
             MapData mapData = JsonUtility.FromJson<MapData>(json);
 
-            // 기존 맵 초기화
+            // 기존 데이터 초기화
             tileMap.ClearAllTiles();
             tileCache.Clear();
 
             foreach (TileData tileData in mapData.tiles)
             {
-                TileBase tile = GetTileByName(tileData.tileType);  // 이름에 맞는 타일 찾기
+                TileBase tile = GetTileByName(tileData.tileType);
                 if (tile != null)
                 {
                     tileMap.SetTile(tileData.position, tile);
-                    tileCache[tileData.position] = tile;  // 캐시에 다시 저장
+                    tileCache[tileData.position] = tile;
+                }
+                else
+                {
+                    Debug.LogWarning($"알 수 없는 타일 이름: {tileData.tileType}");
                 }
             }
+
+            Debug.Log("맵 데이터 로드 완료");
         }
         else
         {
@@ -160,10 +161,7 @@ public class InfiniteMapGenerator : MonoBehaviour
         }
     }
 
-
-    /// <summary>
-    /// 특정 청크를 로드하는 함수 (타일 캐싱 적용)
-    /// </summary>
+    // 특정 청크를 로드하는 함수 (타일 캐싱 적용)
     private void LoadChunk(Vector3Int chunkPos)
     {
         if (!loadedChunks.ContainsKey(chunkPos))
@@ -178,6 +176,8 @@ public class InfiniteMapGenerator : MonoBehaviour
                 for (int y = 0; y < chunkSize; y++)
                 {
                     Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
+
+                    // 이미 설정된 타일은 건너뜀
                     if (!tileCache.ContainsKey(tilePos))
                     {
                         TileBase tile = GetTileByHight(noiseArr[x, y], biomeArr[x, y]);
@@ -186,50 +186,43 @@ public class InfiniteMapGenerator : MonoBehaviour
                     }
                 }
             }
+            loadedChunks[chunkPos] = true; // 청크 로드 상태 업데이트
         }
     }
 
-
-    /// <summary>
-    /// 타일 이름에 맞는 실제 타일 반환 함수
-    /// </summary>
+    // 타일 이름에 맞는 실제 타일 반환 함수
     private TileBase GetTileByName(string name)
     {
-        switch (name)
+        switch (name.ToLower()) // 소문자로 비교하여 일관성 유지
         {
-            case "snow": return snow;
-            case "snow2": return snow2;
-            case "cave": return cave;
-            case "cave2": return cave2;
-            case "ocean": return ocean;
-            case "ocean2": return ocean2;
-            case "desert": return desert;
-            case "desert2": return desert2;
-            case "forest": return forest;
-            case "forest2": return forest2;
-            case "swamp": return swamp;
-            case "swamp2": return swamp2;
-            case "lava": return lava;
-            case "lava2": return lava2;
-            case "grassland": return grassland;
-            case "grassland2": return grassland2;
-            default: return null;
+            case "snowtile": return snow;
+            case "snowtile2": return snow2;
+            case "cavetile": return cave;
+            case "cavetile2": return cave2;
+            case "oceantile": return ocean;
+            case "oceantile2": return ocean2;
+            case "deserttile": return desert;
+            case "deserttile2": return desert2;
+            case "foresttile": return forest;
+            case "foresttile2": return forest2;
+            case "swamptile": return swamp;
+            case "swamptile2": return swamp2;
+            case "lavatile": return lava;
+            case "lavatile2": return lava2;
+            case "grasslandtile": return grassland;
+            case "grasslandtile2": return grassland2;
+            default:
+                Debug.LogWarning($"알 수 없는 타일 이름: {name}");
+                return null;
         }
     }
 
-
-    /// <summary>
-    /// 게임 종료 시 맵 저장 호출
-    /// </summary>
+    // 게임 종료 시 맵 저장 호출
     void OnApplicationQuit()
     {
         SaveMap();
     }
-
-
-    /// <summary>
-    /// 최초 생성맵을 생성하는 함수
-    /// </summary>
+    // 최초 생성맵을 생성하는 함수
     private void GenerateFullMap()
     {
         for (int chunkX = 0; chunkX < worldSizeInChunks; chunkX++)
@@ -241,11 +234,7 @@ public class InfiniteMapGenerator : MonoBehaviour
             }
         }
     }
-
-
-    /// <summary>
-    /// 플레이어의 현재 청크 좌표를 가져오는 함수
-    /// </summary>
+    // 플레이어의 현재 청크 좌표를 가져오는 함수
     private Vector3Int GetPlayerChunkPosition()
     {
         Vector3 playerPosition = Camera.main.transform.position;
@@ -255,10 +244,7 @@ public class InfiniteMapGenerator : MonoBehaviour
             0);
     }
 
-
-    /// <summary>
     /// 플레이어 이동에 따라 청크를 업데이트하는 코루틴 함수
-    /// </summary>
     private IEnumerator UpdateChunks()
     {
         while (true)
@@ -270,10 +256,7 @@ public class InfiniteMapGenerator : MonoBehaviour
         }
     }
 
-
-    /// <summary>
-    /// 주변 청크들을 로드하는 함수
-    /// </summary>
+    // 주변 청크들을 로드하는 함수
     private void LoadSurroundingChunks(Vector3Int centerChunk)
     {
         for (int xOffset = -1; xOffset <= 1; xOffset++)
@@ -290,10 +273,7 @@ public class InfiniteMapGenerator : MonoBehaviour
         }
     }
 
-
-    /// <summary>
-    /// 멀어진 청크들을 언로드하는 함수
-    /// </summary>
+    // 멀어진 청크들을 언로드하는 함수
     private void UnloadDistantChunks(Vector3Int centerChunk)
     {
         List<Vector3Int> chunksToUnload = new List<Vector3Int>();
@@ -311,10 +291,7 @@ public class InfiniteMapGenerator : MonoBehaviour
         }
     }
 
-
-    /// <summary>
-    /// 특정 청크를 언로드하는 함수 (타일맵에서 제거)
-    /// </summary>
+    // 특정 청크를 언로드하는 함수 (타일맵에서 제거)
     private void UnloadChunk(Vector3Int chunkPos)
     {
         for (int x = 0; x < chunkSize; x++)
@@ -504,25 +481,17 @@ public class InfiniteMapGenerator : MonoBehaviour
     // 플레이어가 서 있는 타일의 좌표와 바이옴을 콘솔에 출력하는 함수
     private void PrintPlayerTileInfo()
     {
-        // 플레이어의 현재 위치를 타일맵 좌표로 변환
         Vector3 playerPosition = Camera.main.transform.position;
-        Vector3Int tilePosition = new Vector3Int(
-            Mathf.FloorToInt(playerPosition.x),
-            Mathf.FloorToInt(playerPosition.y),
-            0  // z 값은 0으로 고정
-        );
+        Vector3Int tilePosition = tileMap.WorldToCell(playerPosition);
 
-        // 해당 좌표에서 타일맵에서 타일 정보 가져오기
-        TileBase tileAtPlayer = tileMap.GetTile(tilePosition);
-
-        // 타일이 존재하는지 확인하고, 콘솔에 출력
-        if (tileAtPlayer != null)
+        TileBase currentTile = tileMap.GetTile(tilePosition);
+        if (currentTile != null)
         {
-            Debug.Log($"타일 종류: {tilePosition} with tile type: {tileAtPlayer.name}");
+            Debug.Log($"플레이어 위치: {tilePosition}, 현재 타일: {currentTile.name}");
         }
         else
         {
-            Debug.Log($"버그?: {tilePosition}");
+            Debug.Log($"플레이어 위치: {tilePosition}, 현재 타일 없음");
         }
     }
     void Update()
@@ -537,8 +506,20 @@ public class InfiniteMapGenerator : MonoBehaviour
         {
             currentTime += Time.deltaTime;
 
-            if (currentTime >= dayDuration) // 시간이 다 되면 낮/밤 전환
+            // 낮/밤 전환 시간 계산
+            float transitionStart = dayDuration * 2 / 3; // 낮/밤의 마지막 1/3 지점
+            float transitionEnd = dayDuration; // 낮/밤의 끝나는 지점
+
+            if (currentTime >= transitionStart && currentTime < transitionEnd)
             {
+                // 전환 구간에서 밝기 점진적 변화
+                float t = (currentTime - transitionStart) / (transitionEnd - transitionStart);
+                tileMap.color = Color.Lerp(isDay ? dayColor : nightColor, isDay ? nightColor : dayColor, t);
+            }
+
+            if (currentTime >= dayDuration)
+            {
+                // 낮/밤 상태 전환
                 isDay = !isDay;
                 currentTime = 0f;
             }
@@ -547,9 +528,7 @@ public class InfiniteMapGenerator : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 맵의 밝기를 서서히 변화시키는 함수
-    /// </summary>
+    // 맵의 밝기를 서서히 변화시키는 함수
     private void UpdateLighting()
     {
         // 목표 색상을 설정 (낮이면 dayColor, 밤이면 nightColor)
@@ -559,4 +538,3 @@ public class InfiniteMapGenerator : MonoBehaviour
         tileMap.color = Color.Lerp(tileMap.color, targetColor, transitionSpeed * Time.deltaTime);
     }
 }
-

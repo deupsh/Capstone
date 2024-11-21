@@ -272,9 +272,9 @@ MonoBehaviour:
   lava2: {fileID: 11400000, guid: d75247692d5d3314593905c046eed0c3, type: 2}
   grassland: {fileID: 11400000, guid: 2a8e200862ad30e4ba5b7b3465eedd64, type: 2}
   grassland2: {fileID: 11400000, guid: b9205ea0fddc5884b8001cc64f86aa6b, type: 2}
-  dayDuration: 15
+  dayDuration: 10
   dayColor: {r: 1, g: 1, b: 1, a: 1}
-  nightColor: {r: 0, g: 0, b: 0, a: 1}
+  nightColor: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
   transitionSpeed: 0.5
   mapScale: 0.01
   chunkSize: 16
@@ -291,8 +291,8 @@ GameObject:
   m_Component:
   - component: {fileID: 387044486}
   - component: {fileID: 387044488}
-  - component: {fileID: 387044487}
   - component: {fileID: 387044489}
+  - component: {fileID: 387044490}
   m_Layer: 0
   m_Name: "\uD50C\uB808\uC774\uC5B4"
   m_TagString: Untagged
@@ -315,19 +315,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1035124997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &387044487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 387044485}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1e662d412b21844e96f05daba541562, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
 --- !u!212 &387044488
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -407,6 +394,19 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &387044490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387044485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e662d412b21844e96f05daba541562, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileMap: {fileID: 339680638}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -624,7 +624,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1e662d412b21844e96f05daba541562, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  tileMap: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
