@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: e33068389d76f3647b13e562aab144f9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - tileMap: {instanceID: 0}
+  - snow: {instanceID: 0}
+  - cave: {instanceID: 0}
+  - ocean: {instanceID: 0}
+  - desert: {instanceID: 0}
+  - forest: {instanceID: 0}
+  - swamp: {instanceID: 0}
+  - lava: {instanceID: 0}
+  - grassland: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
