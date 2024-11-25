@@ -16,7 +16,7 @@ public class MapGenerator : MonoBehaviour
 
     [Header("맵 설정")]
     [SerializeField] private float mapScale = 0.01f; // 노이즈 스케일
-    [SerializeField] private int chunkSize = 16; // 청크 크기
+    [SerializeField] public int chunkSize = 16; // 청크 크기
     [SerializeField] private int octaves = 3; // 노이즈 복잡도
     [SerializeField] private int pointNum = 8; // 바이옴 크기 조절 (클수록 작은 바이옴)
     [SerializeField] private float unloadDistance = 3; // 플레이어로부터 몇 청크 이상 멀어진 경우 언로드
@@ -158,20 +158,36 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
+        MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
+        if (monsterSpawnManager != null)
+        {
+            monsterSpawnManager.SpawnMonstersForChunk(chunkPos, biomeArr);
+        }
     }
 
     // 특정 청크를 언로드
     private void UnloadChunk(Vector3Int chunkPos)
+{
+    for (int x = 0; x < chunkSize; x++)
     {
-        for (int x = 0; x < chunkSize; x++)
+        for (int y = 0; y < chunkSize; y++)
         {
-            for (int y = 0; y < chunkSize; y++)
+            Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
+
+            if (tileCache.ContainsKey(tilePos))
             {
-                Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
-                SetTile(tilePos, null); // 중앙화된 SetTile 호출로 제거 처리
+                SetTile(tilePos, null); // 타일맵에서 제거
+                tileCache.Remove(tilePos); // 캐시에서 제거
             }
         }
     }
+    // MonsterSpawnManager 호출하여 청크 내 몬스터 언로드
+    MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
+    if (monsterSpawnManager != null)
+    {
+        monsterSpawnManager.UnloadMonstersForChunk(chunkPos);
+    }
+}
 
     // 노이즈 배열 생성
     private float[,] GenerateNoise(Vector3Int chunkPos)
@@ -296,4 +312,23 @@ public class MapGenerator : MonoBehaviour
         Debug.Log("[무결성 검증 완료] 모든 데이터가 일치합니다.");
         return true;
     }
+
+    public Biome GetBiomeAt(Vector3Int position)
+{
+    // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
+    if (tileCache.TryGetValue(position, out TileBase tile))
+    {
+        // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
+        if (tile.name.Contains("Snow")) return Biome.Snow;
+        if (tile.name.Contains("Forest")) return Biome.Forest;
+        if (tile.name.Contains("Lava")) return Biome.Lava;
+        if (tile.name.Contains("Ocean")) return Biome.Ocean;
+        if (tile.name.Contains("Grassland")) return Biome.Grassland;
+        if (tile.name.Contains("Cave")) return Biome.Cave;
+        if (tile.name.Contains("Swamp")) return Biome.Swamp;
+        if (tile.name.Contains("Desert")) return Biome.Desert;
+    }
+
+    return Biome.MAX; // 기본값 (알 수 없는 바이옴)
+}
 }
