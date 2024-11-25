@@ -16,11 +16,13 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("맵 데이터 로드 중...");
             mapDataManager.LoadMap(); // JSON 파일에서 기존 데이터를 불러옴
+            mapGenerator.ValidateIntegrity();
         }
         else
         {
             Debug.Log("새로운 맵 생성");
             mapGenerator.GenerateInitialChunks(); // 새로운 맵 생성
+            mapDataManager.SaveMap(); // 생성된 맵을 바로 저장
         }
 
         Debug.Log("게임 시작");

@@ -40,7 +40,6 @@ public class TimeManager : MonoBehaviour
     {
         UpdateLighting();
     }
-
     private void UpdateLighting()
     {
         Color targetColor = isDayTime ? dayColor : nightColor;

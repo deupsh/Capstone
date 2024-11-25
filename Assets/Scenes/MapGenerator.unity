@@ -254,7 +254,7 @@ TilemapRenderer:
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
-  m_Mode: 0
+  m_Mode: 1
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
 --- !u!1839735485 &339680638
@@ -770,6 +770,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileMap: {fileID: 339680638}
   player: {fileID: 387044486}
+  mapGenerator: {fileID: 795340209}
 --- !u!4 &1176139113
 Transform:
   m_ObjectHideFlags: 0

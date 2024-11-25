@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class TileData
+public class MapData
 {
-    public Vector3Int position; // 타일의 위치
-    public string tileType;     // 타일의 타입(이름)
+    public List<TileData> tiles = new List<TileData>();
 }
 
 [System.Serializable]
-public class MapData
+public class TileData
 {
-    public List<TileData> tiles = new List<TileData>(); // 타일 데이터 리스트
+    public Vector3Int position; // 타일 위치
+    public string tileType;     // 타일 타입(이름)
 }

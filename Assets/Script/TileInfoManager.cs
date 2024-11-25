@@ -3,8 +3,9 @@ using UnityEngine.Tilemaps;
 
 public class TileInfoManager : MonoBehaviour
 {
-    [SerializeField] private Tilemap tileMap;
-    [SerializeField] private Transform player;
+    [SerializeField] private Tilemap tileMap; // 타일맵 참조
+    [SerializeField] private Transform player; // 플레이어 참조
+    [SerializeField] private MapGenerator mapGenerator; // MapGenerator 참조
 
     void Update()
     {
@@ -13,12 +14,6 @@ public class TileInfoManager : MonoBehaviour
 
     private void DisplayPlayerTileInfo()
     {
-        if (tileMap == null || player == null)
-        {
-            Debug.LogWarning("타일맵 또는 플레이어가 설정되지 않았습니다.");
-            return;
-        }
-
         Vector3 playerPosition = player.position;
         Vector3Int tilePosition = tileMap.WorldToCell(playerPosition);
 
@@ -26,11 +21,29 @@ public class TileInfoManager : MonoBehaviour
 
         if (currentTile != null)
         {
-            Debug.Log($"플레이어 위치: {tilePosition}, 현재 타일: {currentTile.name}");
+            Debug.Log($"[플레이어 위치] 좌표: {tilePosition}, 타일맵 타일: {currentTile.name}");
         }
         else
         {
-            Debug.Log($"플레이어 위치: {tilePosition}, 현재 타일 없음");
+            Debug.Log($"[플레이어 위치] 좌표: {tilePosition}, 현재 타일 없음");
+        }
+
+        if (mapGenerator != null)
+        {
+            var tileCache = mapGenerator.GetTileCache();
+            if (tileCache.ContainsKey(tilePosition))
+            {
+                Debug.Log($"[캐시 데이터] 좌표: {tilePosition}, 캐시 타일: {tileCache[tilePosition].name}");
+
+                if (currentTile != null && currentTile.name != tileCache[tilePosition].name)
+                {
+                    Debug.LogError($"[불일치 발견] 좌표: {tilePosition}, 타일맵={currentTile.name}, 캐시={tileCache[tilePosition].name}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[캐시 없음] 좌표: {tilePosition}");
+            }
         }
     }
 }
