@@ -24,13 +24,30 @@ public class MonsterSpawnManager : MonoBehaviour
     private Dictionary<Vector3Int, GameObject> spawnedMonsters = new Dictionary<Vector3Int, GameObject>(); // 타일 위치와 몬스터 매핑
     private Dictionary<Biome, int> biomeSpawnCount = new Dictionary<Biome, int>(); // 바이옴별 스폰 횟수 추적
 
-    void Start()
+    private void Start()
     {
+        // MapGenerator가 설정되어 있는지 확인
+        if (mapGenerator != null)
+        {
+            mapGenerator.OnChunkGenerated += HandleChunkGenerated; // 맵 생성 완료 이벤트 구독
+        }
+        else
+        {
+            Debug.LogError("[MonsterSpawnManager] MapGenerator가 설정되지 않았습니다.");
+        }
+
         // 바이옴별 스폰 카운터 초기화
         foreach (Biome biome in System.Enum.GetValues(typeof(Biome)))
         {
             biomeSpawnCount[biome] = 0; // 초기화
         }
+    }
+
+    // 맵 생성 완료 시 호출되는 이벤트 핸들러
+    private void HandleChunkGenerated(Vector3Int chunkPos, Biome[,] biomeArr)
+    {
+        Debug.Log($"[MonsterSpawnManager] 청크 생성 완료: {chunkPos}");
+        SpawnMonstersForChunk(chunkPos, biomeArr);
     }
 
     // 특정 타일 위치에 몬스터를 스폰하는 메서드
@@ -61,6 +78,23 @@ public class MonsterSpawnManager : MonoBehaviour
         }
     }
 
+    // 특정 청크 내 모든 타일에 대해 몬스터를 스폰하는 메서드
+    public void SpawnMonstersForChunk(Vector3Int chunkPos, Biome[,] biomeArr)
+    {
+        for (int x = 0; x < mapGenerator.chunkSize; x++)
+        {
+            for (int y = 0; y < mapGenerator.chunkSize; y++)
+            {
+                Vector3Int tilePos = new Vector3Int(chunkPos.x * mapGenerator.chunkSize + x, chunkPos.y * mapGenerator.chunkSize + y, 0);
+
+                // 바이옴 정보 가져오기
+                Biome biome = biomeArr[x % mapGenerator.chunkSize, y % mapGenerator.chunkSize];
+
+                SpawnMonsterAtTile(tilePos, biome);
+            }
+        }
+    }
+
     // 특정 타일 위치의 몬스터를 언로드하는 메서드
     public void UnloadMonsterAtTile(Vector3Int tilePos)
     {
@@ -79,24 +113,7 @@ public class MonsterSpawnManager : MonoBehaviour
         }
     }
 
-    // 청크 단위로 몬스터를 스폰하는 메서드
-    public void SpawnMonstersForChunk(Vector3Int chunkPos, Biome[,] biomeArr)
-    {
-        for (int x = 0; x < mapGenerator.chunkSize; x++)
-        {
-            for (int y = 0; y < mapGenerator.chunkSize; y++)
-            {
-                Vector3Int tilePos = new Vector3Int(chunkPos.x * mapGenerator.chunkSize + x, chunkPos.y * mapGenerator.chunkSize + y, 0);
-
-                // 바이옴 정보 가져오기
-                Biome biome = biomeArr[x, y];
-
-                SpawnMonsterAtTile(tilePos, biome);
-            }
-        }
-    }
-
-    // 청크 단위로 몬스터를 언로드하는 메서드
+    // 특정 청크 내 모든 타일에서 몬스터를 언로드하는 메서드
     public void UnloadMonstersForChunk(Vector3Int chunkPos)
     {
         for (int x = 0; x < mapGenerator.chunkSize; x++)
@@ -110,6 +127,7 @@ public class MonsterSpawnManager : MonoBehaviour
         }
     }
 
+    // 주어진 바이옴에 해당하는 몬스터 프리팹을 반환하는 메서드
     private GameObject GetMonsterPrefab(Biome biome)
     {
         switch (biome)

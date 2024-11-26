@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System;
 
 public enum Biome : int { Snow = 0, Cave = 1, Ocean = 2, Desert = 3, Forest = 4, Swamp = 5, Lava = 6, Grassland = 7, MAX }
 
@@ -24,7 +25,10 @@ public class MapGenerator : MonoBehaviour
     private Dictionary<Vector3Int, bool> loadedChunks = new Dictionary<Vector3Int, bool>(); // 로드된 청크 관리
     private Dictionary<Vector3Int, TileBase> tileCache = new Dictionary<Vector3Int, TileBase>(); // 타일 캐싱
 
+
     private Transform player; // 플레이어 Transform 참조
+
+    public event Action<Vector3Int, Biome[,]> OnChunkGenerated;
 
     void Start()
     {
@@ -158,11 +162,7 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-        MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
-        if (monsterSpawnManager != null)
-        {
-            monsterSpawnManager.SpawnMonstersForChunk(chunkPos, biomeArr);
-        }
+        OnChunkGenerated?.Invoke(chunkPos, biomeArr);
     }
 
     // 특정 청크를 언로드
@@ -238,14 +238,14 @@ public class MapGenerator : MonoBehaviour
         {
             if (i < num)
             {
-                positions[i] = new Vector2(Random.Range(0f, 1f), Random.Range(0f, 1f));
+                positions[i] = new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
             }
         }
 
         // 나머지 포인트를 랜덤하게 생성
         for (int i = (int)Biome.MAX; i < num; i++)
         {
-            positions[i] = new Vector2(Random.Range(0f, 1f), Random.Range(0f, 1f));
+            positions[i] = new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
         }
 
         return positions;
@@ -314,21 +314,21 @@ public class MapGenerator : MonoBehaviour
     }
 
     public Biome GetBiomeAt(Vector3Int position)
-{
-    // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
-    if (tileCache.TryGetValue(position, out TileBase tile))
     {
-        // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
-        if (tile.name.Contains("Snow")) return Biome.Snow;
-        if (tile.name.Contains("Forest")) return Biome.Forest;
-        if (tile.name.Contains("Lava")) return Biome.Lava;
-        if (tile.name.Contains("Ocean")) return Biome.Ocean;
-        if (tile.name.Contains("Grassland")) return Biome.Grassland;
-        if (tile.name.Contains("Cave")) return Biome.Cave;
-        if (tile.name.Contains("Swamp")) return Biome.Swamp;
-        if (tile.name.Contains("Desert")) return Biome.Desert;
-    }
+    // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
+        if (tileCache.TryGetValue(position, out TileBase tile))
+        {
+            // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
+            if (tile.name.Contains("Snow")) return Biome.Snow;
+            if (tile.name.Contains("Forest")) return Biome.Forest;
+            if (tile.name.Contains("Lava")) return Biome.Lava;
+            if (tile.name.Contains("Ocean")) return Biome.Ocean;
+            if (tile.name.Contains("Grassland")) return Biome.Grassland;
+            if (tile.name.Contains("Cave")) return Biome.Cave;
+            if (tile.name.Contains("Swamp")) return Biome.Swamp;
+            if (tile.name.Contains("Desert")) return Biome.Desert;
+        }
 
     return Biome.MAX; // 기본값 (알 수 없는 바이옴)
-}
+    }
 }

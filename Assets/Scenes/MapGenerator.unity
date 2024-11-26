@@ -501,7 +501,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &490882280
 Transform:
   m_ObjectHideFlags: 0
@@ -969,7 +969,7 @@ MonoBehaviour:
   GrasslandMonster: {fileID: 916743192}
   mapGenerator: {fileID: 795340209}
   tileMap: {fileID: 339680638}
-  spawnLimitPerBiome: 10
+  spawnLimitPerBiome: 5
 --- !u!1 &1473594757 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9167984968562606132, guid: 50e90446f60352b42afe2eafbc7cc674, type: 3}
@@ -1466,6 +1466,10 @@ PrefabInstance:
     - target: {fileID: 5136432063744581632, guid: fe174d521ee56144483190125d682b9f, type: 3}
       propertyPath: m_Name
       value: SnowMonster
+      objectReference: {fileID: 0}
+    - target: {fileID: 5136432063744581632, guid: fe174d521ee56144483190125d682b9f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6361924722186014533, guid: fe174d521ee56144483190125d682b9f, type: 3}
       propertyPath: m_LocalPosition.x

@@ -13,7 +13,7 @@ MonoImporter:
   - swamp: {instanceID: 0}
   - lava: {instanceID: 0}
   - grassland: {instanceID: 0}
-  executionOrder: 0
+  executionOrder: 100
   icon: {instanceID: 0}
   userData: 
   assetBundleName: 
