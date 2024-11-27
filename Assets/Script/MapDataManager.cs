@@ -16,19 +16,13 @@ public class MapDataManager : MonoBehaviour
             return;
         }
 
-        // 디버깅 로그: tileCache 상태 출력
-        foreach (var kvp in mapGenerator.GetTileCache())
-        {
-            Debug.Log($"저장되는 타일: 위치={kvp.Key}, 이름={kvp.Value.name}");
-        }
-
-        // MapData 생성 및 JSON 파일 저장
         Dictionary<Vector3Int, TileBase> tileCache = mapGenerator.GetTileCache();
+
         MapData mapData = new MapData();
 
         foreach (var tileEntry in tileCache)
         {
-            if (tileEntry.Value != null)
+            if (tileEntry.Value != null && !string.IsNullOrEmpty(tileEntry.Value.name))
             {
                 TileData tileData = new TileData
                 {
@@ -37,12 +31,18 @@ public class MapDataManager : MonoBehaviour
                 };
                 mapData.tiles.Add(tileData);
             }
+            else
+            {
+                Debug.LogWarning($"[경고] 타일 이름 없음: 위치={tileEntry.Key}");
+            }
         }
 
         string json = JsonUtility.ToJson(mapData, true);
-        File.WriteAllText(Application.persistentDataPath + "/mapdata.json", json);
+        string path = Application.persistentDataPath + "/mapdata.json";
 
-        Debug.Log("맵 데이터 저장 완료: " + json);
+        File.WriteAllText(path, json);
+
+        Debug.Log($"맵 데이터 저장 완료: {path}\n{json}");
     }
 
     // JSON 파일에서 맵 데이터를 불러오는 함수
@@ -53,14 +53,7 @@ public class MapDataManager : MonoBehaviour
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            Debug.Log($"[JSON 파일 내용]:\n{json}");
-
             MapData mapData = JsonUtility.FromJson<MapData>(json);
-
-            foreach (var tileData in mapData.tiles)
-            {
-                Debug.Log($"[로드된 JSON 데이터] 위치: {tileData.position}, 타일 타입: {tileData.tileType}");
-            }
         }
     }
 

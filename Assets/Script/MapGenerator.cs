@@ -58,8 +58,6 @@ public class MapGenerator : MonoBehaviour
         {
             tileCache.Remove(position);
         }
-
-        Debug.Log($"[SetTile 호출] 위치: {position}, 타일 이름: {(tile != null ? tile.name : "null")}");
     }
 
     // 플레이어 이동에 따라 청크를 업데이트하는 코루틴
@@ -91,10 +89,6 @@ public class MapGenerator : MonoBehaviour
         Vector3Int initialChunk = new Vector3Int(0, 0, 0);
         LoadChunk(initialChunk); // 청크 로드
 
-        foreach (var kvp in tileCache)
-        {
-            Debug.Log($"생성된 타일: 위치={kvp.Key}, 이름={kvp.Value.name}");
-        }
     }
 
     public Dictionary<Vector3Int, TileBase> GetTileCache()
@@ -152,183 +146,189 @@ public class MapGenerator : MonoBehaviour
             {
                 Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
 
-                if (!tileCache.ContainsKey(tilePos)) // 캐시에 없는 경우에만 추가
+                // 기존 타일이 있는지 확인
+                if (tileCache.ContainsKey(tilePos) || tileMap.HasTile(tilePos))
                 {
-                    TileBase tile = GetTileByHeight(noiseArr[x, y], biomeArr[x % chunkSize, y % chunkSize]);
-                    if (tile != null)
-                    {
-                        SetTile(tilePos, tile); // 중앙화된 SetTile 호출
-                    }
+                    continue; // 기존 타일이 있으면 건너뜀
+                }
+
+                // 새로운 타일 생성
+                TileBase tile = GetTileByHeight(noiseArr[x, y], biomeArr[x % chunkSize, y % chunkSize]);
+                if (tile != null)
+                {
+                    SetTile(tilePos, tile); // 중앙화된 SetTile 호출
                 }
             }
         }
+
+        // 청크 생성 완료 이벤트 호출
         OnChunkGenerated?.Invoke(chunkPos, biomeArr);
     }
 
     // 특정 청크를 언로드
     private void UnloadChunk(Vector3Int chunkPos)
-{
-    for (int x = 0; x < chunkSize; x++)
     {
-        for (int y = 0; y < chunkSize; y++)
-        {
-            Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
-
-            if (tileCache.ContainsKey(tilePos))
-            {
-                SetTile(tilePos, null); // 타일맵에서 제거
-                tileCache.Remove(tilePos); // 캐시에서 제거
-            }
-        }
-    }
-    // MonsterSpawnManager 호출하여 청크 내 몬스터 언로드
-    MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
-    if (monsterSpawnManager != null)
-    {
-        monsterSpawnManager.UnloadMonstersForChunk(chunkPos);
-    }
-}
-
-    // 노이즈 배열 생성
-    private float[,] GenerateNoise(Vector3Int chunkPos)
-    {
-        float[,] noiseArr = new float[chunkSize, chunkSize];
-        float minValue = float.MaxValue;
-        float maxValue = float.MinValue;
-
         for (int x = 0; x < chunkSize; x++)
         {
             for (int y = 0; y < chunkSize; y++)
             {
-                float amplitude = 1f;
-                float frequency = 1f;
+                Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
 
-                for (int i = 0; i < octaves; i++)
+                if (tileCache.ContainsKey(tilePos))
                 {
-                    noiseArr[x, y] += amplitude * Mathf.PerlinNoise(
-                        (chunkPos.x * chunkSize + x) * mapScale * frequency,
-                        (chunkPos.y * chunkSize + y) * mapScale * frequency
-                    );
-                    frequency *= 2f;
-                    amplitude *= 0.5f;
+                    SetTile(tilePos, null); // 타일맵에서 제거
+                    tileCache.Remove(tilePos); // 캐시에서 제거
                 }
-                // 최소/최대값 갱신
-                if (noiseArr[x, y] < minValue) minValue = noiseArr[x, y];
-                if (noiseArr[x, y] > maxValue) maxValue = noiseArr[x, y];
             }
         }
-        // 정규화: 모든 값을 [0, 1] 범위로 변환
-        for (int x = 0; x < chunkSize; x++)
+        // MonsterSpawnManager 호출하여 청크 내 몬스터 언로드
+        MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
+        if (monsterSpawnManager != null)
         {
-            for (int y = 0; y < chunkSize; y++)
-            {
-                noiseArr[x, y] = Mathf.InverseLerp(minValue, maxValue, noiseArr[x, y]);
-            }
+            monsterSpawnManager.UnloadMonstersForChunk(chunkPos);
         }
-        return noiseArr;
     }
 
-    // 랜덤 위치 배열 생성
-    private Vector2[] GenerateRandomPos(int num)
-    {
-        Vector2[] positions = new Vector2[num];
-
-        // 먼저 모든 바이옴에 대해 최소 하나의 포인트를 생성
-        for (int i = 0; i < (int)Biome.MAX; i++)
+        // 노이즈 배열 생성
+        private float[,] GenerateNoise(Vector3Int chunkPos)
         {
-            if (i < num)
+            float[,] noiseArr = new float[chunkSize, chunkSize];
+            float minValue = float.MaxValue;
+            float maxValue = float.MinValue;
+
+            for (int x = 0; x < chunkSize; x++)
+            {
+                for (int y = 0; y < chunkSize; y++)
+                {
+                    float amplitude = 1f;
+                    float frequency = 1f;
+
+                    for (int i = 0; i < octaves; i++)
+                    {
+                        noiseArr[x, y] += amplitude * Mathf.PerlinNoise(
+                            (chunkPos.x * chunkSize + x) * mapScale * frequency,
+                            (chunkPos.y * chunkSize + y) * mapScale * frequency
+                        );
+                        frequency *= 2f;
+                        amplitude *= 0.5f;
+                    }
+                    // 최소/최대값 갱신
+                    if (noiseArr[x, y] < minValue) minValue = noiseArr[x, y];
+                    if (noiseArr[x, y] > maxValue) maxValue = noiseArr[x, y];
+                }
+            }
+            // 정규화: 모든 값을 [0, 1] 범위로 변환
+            for (int x = 0; x < chunkSize; x++)
+            {
+                for (int y = 0; y < chunkSize; y++)
+                {
+                    noiseArr[x, y] = Mathf.InverseLerp(minValue, maxValue, noiseArr[x, y]);
+                }
+            }
+            return noiseArr;
+        }
+
+        // 랜덤 위치 배열 생성
+        private Vector2[] GenerateRandomPos(int num)
+        {
+            Vector2[] positions = new Vector2[num];
+
+            // 먼저 모든 바이옴에 대해 최소 하나의 포인트를 생성
+            for (int i = 0; i < (int)Biome.MAX; i++)
+            {
+                if (i < num)
+                {
+                    positions[i] = new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+                }
+            }
+
+            // 나머지 포인트를 랜덤하게 생성
+            for (int i = (int)Biome.MAX; i < num; i++)
             {
                 positions[i] = new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
             }
+
+            return positions;
         }
 
-        // 나머지 포인트를 랜덤하게 생성
-        for (int i = (int)Biome.MAX; i < num; i++)
+        // 바이옴 배열 생성
+        private Biome[,] GenerateBiome(Vector2[] points)
         {
-            positions[i] = new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-        }
+            Biome[,] biomeArr = new Biome[chunkSize, chunkSize];
 
-        return positions;
-    }
-
-    // 바이옴 배열 생성
-    private Biome[,] GenerateBiome(Vector2[] points)
-    {
-        Biome[,] biomeArr = new Biome[chunkSize, chunkSize];
-
-        for (int x = 0; x < chunkSize; x++)
-        {
-            for (int y = 0; y < chunkSize; y++)
+            for (int x = 0; x < chunkSize; x++)
             {
-                Vector2 currentPoint = new Vector2(x / (float)chunkSize, y / (float)chunkSize);
-                float minDistance = float.MaxValue;
-                int closestBiomeIndex = -1;
-
-                // 현재 점과 가장 가까운 랜덤 포인트를 찾음
-                for (int i = 0; i < points.Length; i++)
+                for (int y = 0; y < chunkSize; y++)
                 {
-                    float distanceToPoint = Vector2.Distance(currentPoint, points[i]);
-                    if (distanceToPoint < minDistance)
+                    Vector2 currentPoint = new Vector2(x / (float)chunkSize, y / (float)chunkSize);
+                    float minDistance = float.MaxValue;
+                    int closestBiomeIndex = -1;
+
+                    // 현재 점과 가장 가까운 랜덤 포인트를 찾음
+                    for (int i = 0; i < points.Length; i++)
                     {
-                        minDistance = distanceToPoint;
-                        closestBiomeIndex = i;
+                        float distanceToPoint = Vector2.Distance(currentPoint, points[i]);
+                        if (distanceToPoint < minDistance)
+                        {
+                            minDistance = distanceToPoint;
+                            closestBiomeIndex = i;
+                        }
                     }
+                    // 가까운 포인트를 기반으로 바이옴 결정
+                    biomeArr[x, y] = (Biome)(closestBiomeIndex % (int)Biome.MAX);
                 }
-                // 가까운 포인트를 기반으로 바이옴 결정
-                biomeArr[x, y] = (Biome)(closestBiomeIndex % (int)Biome.MAX);
             }
+
+            return biomeArr;
         }
 
-        return biomeArr;
-    }
-
-    // 높이에 따른 타일을 결정하는 함수
-    private TileBase GetTileByHeight(float height, Biome biome)
-    {
-        switch (biome)
+        // 높이에 따른 타일을 결정하는 함수
+        private TileBase GetTileByHeight(float height, Biome biome)
         {
-        case Biome.Snow: return height <= 0.5f ? snow : snow2;
-        case Biome.Cave: return height <= 0.5f ? cave : cave2;
-        case Biome.Ocean: return height <= 0.5f ? ocean : ocean2;
-        case Biome.Desert: return height <= 0.5f ? desert : desert2;
-        case Biome.Forest: return height <= 0.5f ? forest : forest2;
-        case Biome.Swamp: return height <= 0.5f ? swamp : swamp2;
-        case Biome.Lava: return height <= 0.5f ? lava : lava2;
-        case Biome.Grassland: return height <= 0.5f ? grassland : grassland2;
-        default: return grassland; // 기본값으로 초원 타일 반환
-        }
-    }
-    public bool ValidateIntegrity()
-    {
-        foreach (var kvp in tileCache)
-        {
-            TileBase mapTile = tileMap.GetTile(kvp.Key);
-            if (mapTile == null || mapTile.name != kvp.Value.name)
+            switch (biome)
             {
-                Debug.LogError($"[무결성 깨짐] 위치: {kvp.Key}, 타일맵={mapTile?.name ?? "null"}, 캐시={kvp.Value.name}");
-                return false;
+            case Biome.Snow: return height <= 0.5f ? snow : snow2;
+            case Biome.Cave: return height <= 0.5f ? cave : cave2;
+            case Biome.Ocean: return height <= 0.5f ? ocean : ocean2;
+            case Biome.Desert: return height <= 0.5f ? desert : desert2;
+            case Biome.Forest: return height <= 0.5f ? forest : forest2;
+            case Biome.Swamp: return height <= 0.5f ? swamp : swamp2;
+            case Biome.Lava: return height <= 0.5f ? lava : lava2;
+            case Biome.Grassland: return height <= 0.5f ? grassland : grassland2;
+            default: return grassland; // 기본값으로 초원 타일 반환
             }
         }
-        Debug.Log("[무결성 검증 완료] 모든 데이터가 일치합니다.");
-        return true;
-    }
-
-    public Biome GetBiomeAt(Vector3Int position)
-    {
-    // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
-        if (tileCache.TryGetValue(position, out TileBase tile))
+        public bool ValidateIntegrity()
         {
-            // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
-            if (tile.name.Contains("Snow")) return Biome.Snow;
-            if (tile.name.Contains("Forest")) return Biome.Forest;
-            if (tile.name.Contains("Lava")) return Biome.Lava;
-            if (tile.name.Contains("Ocean")) return Biome.Ocean;
-            if (tile.name.Contains("Grassland")) return Biome.Grassland;
-            if (tile.name.Contains("Cave")) return Biome.Cave;
-            if (tile.name.Contains("Swamp")) return Biome.Swamp;
-            if (tile.name.Contains("Desert")) return Biome.Desert;
+            foreach (var kvp in tileCache)
+            {
+                TileBase mapTile = tileMap.GetTile(kvp.Key);
+                if (mapTile == null || mapTile.name != kvp.Value.name)
+                {
+                    Debug.LogError($"[무결성 깨짐] 위치: {kvp.Key}, 타일맵={mapTile?.name ?? "null"}, 캐시={kvp.Value.name}");
+                    return false;
+                }
+            }
+            Debug.Log("[무결성 검증 완료] 모든 데이터가 일치합니다.");
+            return true;
         }
 
-    return Biome.MAX; // 기본값 (알 수 없는 바이옴)
+        public Biome GetBiomeAt(Vector3Int position)
+        {
+        // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
+            if (tileCache.TryGetValue(position, out TileBase tile))
+            {
+                // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
+                if (tile.name.Contains("Snow")) return Biome.Snow;
+                if (tile.name.Contains("Forest")) return Biome.Forest;
+                if (tile.name.Contains("Lava")) return Biome.Lava;
+                if (tile.name.Contains("Ocean")) return Biome.Ocean;
+                if (tile.name.Contains("Grassland")) return Biome.Grassland;
+                if (tile.name.Contains("Cave")) return Biome.Cave;
+                if (tile.name.Contains("Swamp")) return Biome.Swamp;
+                if (tile.name.Contains("Desert")) return Biome.Desert;
+            }
+
+        return Biome.MAX; // 기본값 (알 수 없는 바이옴)
+        }
     }
-}

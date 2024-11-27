@@ -46,7 +46,6 @@ public class MonsterSpawnManager : MonoBehaviour
     // 맵 생성 완료 시 호출되는 이벤트 핸들러
     private void HandleChunkGenerated(Vector3Int chunkPos, Biome[,] biomeArr)
     {
-        Debug.Log($"[MonsterSpawnManager] 청크 생성 완료: {chunkPos}");
         SpawnMonstersForChunk(chunkPos, biomeArr);
     }
 
@@ -73,8 +72,6 @@ public class MonsterSpawnManager : MonoBehaviour
             // Dictionary에 추가 및 카운터 증가
             spawnedMonsters[tilePos] = monster;
             biomeSpawnCount[biome]++;
-            
-            Debug.Log($"몬스터 스폰: 위치={tilePos}, 바이옴={biome}, 현재 바이옴 카운트={biomeSpawnCount[biome]}");
         }
     }
 
@@ -108,7 +105,6 @@ public class MonsterSpawnManager : MonoBehaviour
             if (biomeSpawnCount.ContainsKey(biome))
             {
                 biomeSpawnCount[biome]--;
-                Debug.Log($"몬스터 언로드: 위치={tilePos}, 바이옴={biome}, 현재 바이옴 카운트={biomeSpawnCount[biome]}");
             }
         }
     }

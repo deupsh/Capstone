@@ -40,10 +40,7 @@ public class TileInfoManager : MonoBehaviour
                     Debug.LogError($"[불일치 발견] 좌표: {tilePosition}, 타일맵={currentTile.name}, 캐시={tileCache[tilePosition].name}");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"[캐시 없음] 좌표: {tilePosition}");
-            }
+           
         }
     }
 }
