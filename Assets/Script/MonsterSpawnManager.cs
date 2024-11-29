@@ -6,7 +6,7 @@ public class MonsterSpawnManager : MonoBehaviour
 {
     [Header("몬스터 프리팹")]
     [SerializeField] private GameObject SnowMonster;
-    [SerializeField] private GameObject CaveMonster;
+    [SerializeField] private GameObject PolForestMonster;
     [SerializeField] private GameObject OceanMonster;
     [SerializeField] private GameObject DesertMonster;
     [SerializeField] private GameObject ForestMonster;
@@ -129,7 +129,7 @@ public class MonsterSpawnManager : MonoBehaviour
         switch (biome)
         {
             case Biome.Snow: return SnowMonster;
-            case Biome.Cave: return CaveMonster;
+            case Biome.PolForest: return PolForestMonster;
             case Biome.Ocean: return OceanMonster;
             case Biome.Desert: return DesertMonster;
             case Biome.Forest: return ForestMonster;

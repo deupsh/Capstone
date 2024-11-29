@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5353735042321135347}
   - component: {fileID: 7130039446031361439}
   m_Layer: 0
-  m_Name: CaveMonster
+  m_Name: PolForestMonster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

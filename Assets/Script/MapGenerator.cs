@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
 
-public enum Biome : int { Snow = 0, Cave = 1, Ocean = 2, Desert = 3, Forest = 4, Swamp = 5, Lava = 6, Grassland = 7, MAX }
+public enum Biome : int { Snow = 0, PolForest = 1, Ocean = 2, Desert = 3, Forest = 4, Swamp = 5, Lava = 6, Grassland = 7, MAX }
 
 public class MapGenerator : MonoBehaviour
 {
@@ -13,7 +13,7 @@ public class MapGenerator : MonoBehaviour
 
     [Header("타일 리소스")]
     [SerializeField]
-    private TileBase snow, snow2, cave, cave2, ocean, ocean2, desert, desert2, forest, forest2, swamp, swamp2, lava, lava2, grassland, grassland2;
+    private TileBase snow, snow2, polforest, polforest2, ocean, ocean2, desert, desert2, forest, forest2, swamp, swamp2, lava, lava2, grassland, grassland2;
 
     [Header("맵 설정")]
     [SerializeField] private float mapScale = 0.01f; // 노이즈 스케일
@@ -288,7 +288,7 @@ public class MapGenerator : MonoBehaviour
             switch (biome)
             {
             case Biome.Snow: return height <= 0.5f ? snow : snow2;
-            case Biome.Cave: return height <= 0.5f ? cave : cave2;
+            case Biome.PolForest: return height <= 0.5f ? polforest : polforest2;
             case Biome.Ocean: return height <= 0.5f ? ocean : ocean2;
             case Biome.Desert: return height <= 0.5f ? desert : desert2;
             case Biome.Forest: return height <= 0.5f ? forest : forest2;
@@ -324,7 +324,7 @@ public class MapGenerator : MonoBehaviour
                 if (tile.name.Contains("Lava")) return Biome.Lava;
                 if (tile.name.Contains("Ocean")) return Biome.Ocean;
                 if (tile.name.Contains("Grassland")) return Biome.Grassland;
-                if (tile.name.Contains("Cave")) return Biome.Cave;
+                if (tile.name.Contains("PolForest")) return Biome.PolForest;
                 if (tile.name.Contains("Swamp")) return Biome.Swamp;
                 if (tile.name.Contains("Desert")) return Biome.Desert;
             }

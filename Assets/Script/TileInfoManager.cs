@@ -7,9 +7,15 @@ public class TileInfoManager : MonoBehaviour
     [SerializeField] private Transform player; // 플레이어 참조
     [SerializeField] private MapGenerator mapGenerator; // MapGenerator 참조
 
+    private float lastLogTime = 0f; // 마지막 로그 출력 시간
+
     void Update()
     {
-        DisplayPlayerTileInfo();
+        if (Time.time - lastLogTime >= 1f) // 1초마다 실행
+        {
+            DisplayPlayerTileInfo();
+            lastLogTime = Time.time; // 마지막 로그 시간 갱신
+        }
     }
 
     private void DisplayPlayerTileInfo()
@@ -40,7 +46,6 @@ public class TileInfoManager : MonoBehaviour
                     Debug.LogError($"[불일치 발견] 좌표: {tilePosition}, 타일맵={currentTile.name}, 캐시={tileCache[tilePosition].name}");
                 }
             }
-           
         }
     }
 }
