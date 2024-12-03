@@ -20,7 +20,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] public int chunkSize = 16; // 청크 크기
     [SerializeField] private int octaves = 3; // 노이즈 복잡도
     [SerializeField] private int pointNum = 8; // 바이옴 크기 조절 (클수록 작은 바이옴)
-    [SerializeField] private float unloadDistance = 3; // 플레이어로부터 몇 청크 이상 멀어진 경우 언로드
+    [SerializeField] public float unloadDistance = 3; // 플레이어로부터 몇 청크 이상 멀어진 경우 언로드
 
     private Dictionary<Vector3Int, bool> loadedChunks = new Dictionary<Vector3Int, bool>(); // 로드된 청크 관리
     private Dictionary<Vector3Int, TileBase> tileCache = new Dictionary<Vector3Int, TileBase>(); // 타일 캐싱
@@ -40,16 +40,18 @@ public class MapGenerator : MonoBehaviour
             return;
         }
 
+        // 초기 청크 생성 호출
+        //GenerateInitialChunks();
+
+        // 초기 청크 생성 후 코루틴 시작
         StartCoroutine(UpdateChunks());
     }
 
     // 중앙화된 SetTile 메서드
     public void SetTile(Vector3Int position, TileBase tile)
     {
-        // 타일맵 업데이트
         tileMap.SetTile(position, tile);
 
-        // 캐시 업데이트
         if (tile != null)
         {
             tileCache[position] = tile;
@@ -87,8 +89,8 @@ public class MapGenerator : MonoBehaviour
     public void GenerateInitialChunks()
     {
         Vector3Int initialChunk = new Vector3Int(0, 0, 0);
-        LoadChunk(initialChunk); // 청크 로드
-
+        LoadChunk(initialChunk); // 초기 청크 로드
+        LoadSurroundingChunks(initialChunk);
     }
 
     public Dictionary<Vector3Int, TileBase> GetTileCache()
@@ -137,8 +139,7 @@ public class MapGenerator : MonoBehaviour
     private void LoadChunk(Vector3Int chunkPos)
     {
         float[,] noiseArr = GenerateNoise(chunkPos);
-        Vector2[] randomPoints = GenerateRandomPos(pointNum);
-        Biome[,] biomeArr = GenerateBiome(randomPoints);
+        Biome[,] biomeArr = GenerateBiome(GenerateRandomPos(pointNum));
 
         for (int x = 0; x < chunkSize; x++)
         {
@@ -146,22 +147,23 @@ public class MapGenerator : MonoBehaviour
             {
                 Vector3Int tilePos = new Vector3Int(chunkPos.x * chunkSize + x, chunkPos.y * chunkSize + y, 0);
 
-                // 기존 타일이 있는지 확인
                 if (tileCache.ContainsKey(tilePos) || tileMap.HasTile(tilePos))
                 {
-                    continue; // 기존 타일이 있으면 건너뜀
+                    continue;
                 }
 
-                // 새로운 타일 생성
                 TileBase tile = GetTileByHeight(noiseArr[x, y], biomeArr[x % chunkSize, y % chunkSize]);
                 if (tile != null)
                 {
-                    SetTile(tilePos, tile); // 중앙화된 SetTile 호출
+                    SetTile(tilePos, tile);
+                }
+                else
+                {
+                    Debug.LogWarning($"타일 생성 실패: 위치={tilePos}");
                 }
             }
         }
 
-        // 청크 생성 완료 이벤트 호출
         OnChunkGenerated?.Invoke(chunkPos, biomeArr);
     }
 
@@ -182,7 +184,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
         // MonsterSpawnManager 호출하여 청크 내 몬스터 언로드
-        MonsterSpawnManager monsterSpawnManager = FindObjectOfType<MonsterSpawnManager>();
+        MonsterSpawnManager monsterSpawnManager = FindFirstObjectByType<MonsterSpawnManager>();
         if (monsterSpawnManager != null)
         {
             monsterSpawnManager.UnloadMonstersForChunk(chunkPos);
@@ -282,23 +284,24 @@ public class MapGenerator : MonoBehaviour
             return biomeArr;
         }
 
-        // 높이에 따른 타일을 결정하는 함수
-        private TileBase GetTileByHeight(float height, Biome biome)
+    // 높이에 따른 타일을 결정하는 함수
+    private TileBase GetTileByHeight(float height, Biome biome)
+    {
+        TileBase tile = biome switch
         {
-            switch (biome)
-            {
-            case Biome.Snow: return height <= 0.5f ? snow : snow2;
-            case Biome.PolForest: return height <= 0.5f ? polforest : polforest2;
-            case Biome.Ocean: return height <= 0.5f ? ocean : ocean2;
-            case Biome.Desert: return height <= 0.5f ? desert : desert2;
-            case Biome.Forest: return height <= 0.5f ? forest : forest2;
-            case Biome.Swamp: return height <= 0.5f ? swamp : swamp2;
-            case Biome.Lava: return height <= 0.5f ? lava : lava2;
-            case Biome.Grassland: return height <= 0.5f ? grassland : grassland2;
-            default: return grassland; // 기본값으로 초원 타일 반환
-            }
-        }
-        public bool ValidateIntegrity()
+            Biome.Snow => height <= 0.5f ? snow : snow2,
+            Biome.PolForest => height <= 0.5f ? polforest : polforest2,
+            Biome.Ocean => height <= 0.5f ? ocean : ocean2,
+            Biome.Desert => height <= 0.5f ? desert : desert2,
+            Biome.Forest => height <= 0.5f ? forest : forest2,
+            Biome.Swamp => height <= 0.5f ? swamp : swamp2,
+            Biome.Lava => height <= 0.5f ? lava : lava2,
+            Biome.Grassland => height <= 0.5f ? grassland : grassland2,
+            _ => grassland // 기본값으로 초원 타일 반환
+        };
+        return tile;
+    }
+    public bool ValidateIntegrity()
         {
             foreach (var kvp in tileCache)
             {
@@ -318,7 +321,6 @@ public class MapGenerator : MonoBehaviour
         // 타일맵 또는 캐시에서 해당 위치의 바이옴 정보를 반환
             if (tileCache.TryGetValue(position, out TileBase tile))
             {
-                // 타일 이름 또는 다른 속성을 기반으로 바이옴 결정 (예제)
                 if (tile.name.Contains("Snow")) return Biome.Snow;
                 if (tile.name.Contains("Forest")) return Biome.Forest;
                 if (tile.name.Contains("Lava")) return Biome.Lava;
@@ -328,7 +330,6 @@ public class MapGenerator : MonoBehaviour
                 if (tile.name.Contains("Swamp")) return Biome.Swamp;
                 if (tile.name.Contains("Desert")) return Biome.Desert;
             }
-
-        return Biome.MAX; // 기본값 (알 수 없는 바이옴)
+        return Biome.Lava; // 기본값 (알 수 없는 바이옴)
         }
     }

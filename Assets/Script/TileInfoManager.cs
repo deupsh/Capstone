@@ -37,15 +37,6 @@ public class TileInfoManager : MonoBehaviour
         if (mapGenerator != null)
         {
             var tileCache = mapGenerator.GetTileCache();
-            if (tileCache.ContainsKey(tilePosition))
-            {
-                Debug.Log($"[캐시 데이터] 좌표: {tilePosition}, 캐시 타일: {tileCache[tilePosition].name}");
-
-                if (currentTile != null && currentTile.name != tileCache[tilePosition].name)
-                {
-                    Debug.LogError($"[불일치 발견] 좌표: {tilePosition}, 타일맵={currentTile.name}, 캐시={tileCache[tilePosition].name}");
-                }
-            }
         }
     }
 }

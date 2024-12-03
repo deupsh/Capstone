@@ -6,9 +6,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MapGenerator mapGenerator; // MapGenerator 참조
     [SerializeField] private MapDataManager mapDataManager; // MapDataManager 참조
 
+    // GameManager.cs
     void Start()
     {
         Debug.Log("GameManager 시작");
+
+        if (mapGenerator == null || mapDataManager == null)
+        {
+            Debug.LogError("MapGenerator 또는 MapDataManager가 설정되지 않았습니다.");
+            return;
+        }
 
         string path = Application.persistentDataPath + "/mapdata.json";
 

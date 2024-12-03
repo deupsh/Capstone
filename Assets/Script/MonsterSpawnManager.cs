@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -17,6 +18,7 @@ public class MonsterSpawnManager : MonoBehaviour
     [Header("참조")]
     [SerializeField] private MapGenerator mapGenerator; // MapGenerator 참조
     [SerializeField] private Tilemap tileMap; // 타일맵 참조
+    [SerializeField] private Transform player; // 플레이어 Transform 참조
 
     [Header("스폰 제한 설정")]
     [SerializeField] private int spawnLimitPerBiome = 5; // 바이옴당 최대 몬스터 스폰 수
@@ -26,7 +28,6 @@ public class MonsterSpawnManager : MonoBehaviour
 
     private void Start()
     {
-        // MapGenerator가 설정되어 있는지 확인
         if (mapGenerator != null)
         {
             mapGenerator.OnChunkGenerated += HandleChunkGenerated; // 맵 생성 완료 이벤트 구독
@@ -36,46 +37,37 @@ public class MonsterSpawnManager : MonoBehaviour
             Debug.LogError("[MonsterSpawnManager] MapGenerator가 설정되지 않았습니다.");
         }
 
-        // 바이옴별 스폰 카운터 초기화
         foreach (Biome biome in System.Enum.GetValues(typeof(Biome)))
         {
             biomeSpawnCount[biome] = 0; // 초기화
         }
+
+        StartCoroutine(CheckUnloadMonsters());
     }
 
-    // 맵 생성 완료 시 호출되는 이벤트 핸들러
     private void HandleChunkGenerated(Vector3Int chunkPos, Biome[,] biomeArr)
     {
         SpawnMonstersForChunk(chunkPos, biomeArr);
     }
 
-    // 특정 타일 위치에 몬스터를 스폰하는 메서드
     public void SpawnMonsterAtTile(Vector3Int tilePos, Biome biome)
     {
-        // 이미 해당 타일에 몬스터가 있거나, 바이옴의 스폰 제한을 초과한 경우 건너뜀
         if (spawnedMonsters.ContainsKey(tilePos) || biomeSpawnCount[biome] >= spawnLimitPerBiome)
         {
             return;
         }
 
-        // 바이옴에 해당하는 몬스터 프리팹 가져오기
         GameObject monsterPrefab = GetMonsterPrefab(biome);
 
         if (monsterPrefab != null)
         {
-            // 월드 좌표로 변환
-            Vector3 worldPosition = tileMap.CellToWorld(tilePos) + new Vector3(0.5f, 0.5f, 0); // 중앙 정렬
-
-            // 몬스터 생성
+            Vector3 worldPosition = tileMap.CellToWorld(tilePos) + new Vector3(0.5f, 0.5f, 0);
             GameObject monster = Instantiate(monsterPrefab, worldPosition, Quaternion.identity);
-
-            // Dictionary에 추가 및 카운터 증가
             spawnedMonsters[tilePos] = monster;
             biomeSpawnCount[biome]++;
         }
     }
 
-    // 특정 청크 내 모든 타일에 대해 몬스터를 스폰하는 메서드
     public void SpawnMonstersForChunk(Vector3Int chunkPos, Biome[,] biomeArr)
     {
         for (int x = 0; x < mapGenerator.chunkSize; x++)
@@ -83,25 +75,20 @@ public class MonsterSpawnManager : MonoBehaviour
             for (int y = 0; y < mapGenerator.chunkSize; y++)
             {
                 Vector3Int tilePos = new Vector3Int(chunkPos.x * mapGenerator.chunkSize + x, chunkPos.y * mapGenerator.chunkSize + y, 0);
-
-                // 바이옴 정보 가져오기
                 Biome biome = biomeArr[x % mapGenerator.chunkSize, y % mapGenerator.chunkSize];
-
                 SpawnMonsterAtTile(tilePos, biome);
             }
         }
     }
 
-    // 특정 타일 위치의 몬스터를 언로드하는 메서드
     public void UnloadMonsterAtTile(Vector3Int tilePos)
     {
         if (spawnedMonsters.TryGetValue(tilePos, out GameObject monster))
         {
-            // 해당 타일의 몬스터 제거 및 카운터 감소
             Destroy(monster);
             spawnedMonsters.Remove(tilePos);
 
-            Biome biome = mapGenerator.GetBiomeAt(tilePos); // 해당 타일의 바이옴 정보 가져오기
+            Biome biome = mapGenerator.GetBiomeAt(tilePos);
             if (biomeSpawnCount.ContainsKey(biome))
             {
                 biomeSpawnCount[biome]--;
@@ -109,7 +96,6 @@ public class MonsterSpawnManager : MonoBehaviour
         }
     }
 
-    // 특정 청크 내 모든 타일에서 몬스터를 언로드하는 메서드
     public void UnloadMonstersForChunk(Vector3Int chunkPos)
     {
         for (int x = 0; x < mapGenerator.chunkSize; x++)
@@ -117,13 +103,37 @@ public class MonsterSpawnManager : MonoBehaviour
             for (int y = 0; y < mapGenerator.chunkSize; y++)
             {
                 Vector3Int tilePos = new Vector3Int(chunkPos.x * mapGenerator.chunkSize + x, chunkPos.y * mapGenerator.chunkSize + y, 0);
-
                 UnloadMonsterAtTile(tilePos);
             }
         }
     }
 
-    // 주어진 바이옴에 해당하는 몬스터 프리팹을 반환하는 메서드
+    private IEnumerator CheckUnloadMonsters()
+    {
+        while (true)
+        {
+            List<Vector3Int> tilesToUnload = new List<Vector3Int>();
+
+            foreach (var kvp in spawnedMonsters)
+            {
+                Vector3 worldPosition = tileMap.CellToWorld(kvp.Key);
+                float distanceToPlayer = Vector3.Distance(player.position, worldPosition);
+
+                if (distanceToPlayer > mapGenerator.unloadDistance * mapGenerator.chunkSize)
+                {
+                    tilesToUnload.Add(kvp.Key);
+                }
+            }
+
+            foreach (var tile in tilesToUnload)
+            {
+                UnloadMonsterAtTile(tile);
+            }
+
+            yield return new WaitForSeconds(1f); // 1초마다 체크
+        }
+    }
+
     private GameObject GetMonsterPrefab(Biome biome)
     {
         switch (biome)
@@ -136,7 +146,9 @@ public class MonsterSpawnManager : MonoBehaviour
             case Biome.Swamp: return SwampMonster;
             case Biome.Lava: return LavaMonster;
             case Biome.Grassland: return GrasslandMonster;
-            default: return null;
+            default:
+                Debug.LogError($"[GetMonsterPrefab] 지원되지 않는 바이옴: {biome}");
+                return null;
         }
     }
 }

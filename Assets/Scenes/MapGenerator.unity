@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 9
+  serializedVersion: 10
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -42,8 +42,8 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
-  m_GIWorkflowMode: 1
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -66,9 +66,6 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_FinalGather: 0
-    m_FinalGatherFiltering: 1
-    m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
     m_MixedBakeMode: 2
     m_BakeBackend: 0
@@ -122,11 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &65909678 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5009257250845607777, guid: 321a030585a565340996e48a685f2616, type: 3}
-  m_PrefabInstance: {fileID: 734031360637489912}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &65909679 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 397801350432000226, guid: 321a030585a565340996e48a685f2616, type: 3}
@@ -180,16 +172,10 @@ Transform:
   - {fileID: 1487472548}
   - {fileID: 1264314934}
   - {fileID: 1176139113}
-  - {fileID: 1365888945}
   - {fileID: 1035124997}
   - {fileID: 530936953}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &210221989 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2202427855387698436, guid: d405390df30674148850c50be1dc0b41, type: 3}
-  m_PrefabInstance: {fileID: 5841803248638705474}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &210221990 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7500371303487682201, guid: d405390df30674148850c50be1dc0b41, type: 3}
@@ -246,6 +232,9 @@ TilemapRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -350,11 +339,6 @@ MonoBehaviour:
   octaves: 3
   pointNum: 8
   unloadDistance: 3
---- !u!1 &377258863 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 32625645376153001, guid: ad2cae157635f0945a1db69d9267defd, type: 3}
-  m_PrefabInstance: {fileID: 6180262003315018872}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &377258864 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8331147559405908183, guid: ad2cae157635f0945a1db69d9267defd, type: 3}
@@ -411,6 +395,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -448,7 +435,7 @@ SpriteRenderer:
   m_SpriteSortPoint: 0
 --- !u!50 &387044489
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -459,8 +446,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0
+  m_LinearDamping: 0
+  m_AngularDamping: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -735,11 +722,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 180334801}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &916743192 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 785087398048726358, guid: 8fdc2579ba9dfb944935c193946a7724, type: 3}
-  m_PrefabInstance: {fileID: 3637773554015133363}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &916743193 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6592277673436426247, guid: 8fdc2579ba9dfb944935c193946a7724, type: 3}
@@ -765,7 +747,7 @@ GameObject:
   m_IsActive: 1
 --- !u!50 &1035124996
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -776,8 +758,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0
+  m_LinearDamping: 0
+  m_AngularDamping: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -915,66 +897,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 180334801}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1365888944
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1365888945}
-  - component: {fileID: 1365888946}
-  m_Layer: 0
-  m_Name: MonsterSpawnManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1365888945
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1365888944}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 32.149307, y: 4.703762, z: -0.37452728}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 180334801}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1365888946
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1365888944}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1dfd1a1c0e0cd44e85ba3ba5ec72be4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SnowMonster: {fileID: 1588580638}
-  PolForestMonster: {fileID: 1511248129}
-  OceanMonster: {fileID: 1811416392}
-  DesertMonster: {fileID: 377258863}
-  ForestMonster: {fileID: 65909678}
-  SwampMonster: {fileID: 210221989}
-  LavaMonster: {fileID: 1473594757}
-  GrasslandMonster: {fileID: 916743192}
-  mapGenerator: {fileID: 795340209}
-  tileMap: {fileID: 339680638}
-  spawnLimitPerBiome: 5
---- !u!1 &1473594757 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9167984968562606132, guid: 50e90446f60352b42afe2eafbc7cc674, type: 3}
-  m_PrefabInstance: {fileID: 3351373056000019774}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1473594758 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 50935584058606385, guid: 50e90446f60352b42afe2eafbc7cc674, type: 3}
@@ -1011,6 +933,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileMap: {fileID: 339680638}
   mapGenerator: {fileID: 795340209}
+  snow: {fileID: 11400000, guid: 38a7e28b1cf520d4e9ac9d6b6865ce33, type: 2}
+  snow2: {fileID: 11400000, guid: 85ee5875183e1eb42b836741867288fd, type: 2}
+  polforest: {fileID: 11400000, guid: a0036082c2c27f342a304eb59830eac7, type: 2}
+  polforest2: {fileID: 11400000, guid: b785cfc1111e7d64880b1d82e77a177d, type: 2}
+  ocean: {fileID: 11400000, guid: 2afa9305e93cf8e4986b39fa280c2608, type: 2}
+  ocean2: {fileID: 11400000, guid: 220ef329250a8f542abdb1c7c832e1f4, type: 2}
+  desert: {fileID: 11400000, guid: e83276569b40094469338b73fd637d4f, type: 2}
+  desert2: {fileID: 11400000, guid: 16782536d9750f247a71016aa302a14c, type: 2}
+  forest: {fileID: 11400000, guid: fc52e1ccb4c30b2418e1cd0461af7c15, type: 2}
+  forest2: {fileID: 11400000, guid: 9a81465fdf9a191429ea05e56dab3856, type: 2}
+  swamp: {fileID: 11400000, guid: 4638f84ceee6665489598dc70b4bfc25, type: 2}
+  swamp2: {fileID: 11400000, guid: 6521bd0441a288c4792d99e0f6a4050e, type: 2}
+  lava: {fileID: 11400000, guid: 9651ec12b2fc8b642b12234ca00d2aab, type: 2}
+  lava2: {fileID: 11400000, guid: d75247692d5d3314593905c046eed0c3, type: 2}
+  grassland: {fileID: 11400000, guid: 2a8e200862ad30e4ba5b7b3465eedd64, type: 2}
+  grassland2: {fileID: 11400000, guid: b9205ea0fddc5884b8001cc64f86aa6b, type: 2}
 --- !u!4 &1487472548
 Transform:
   m_ObjectHideFlags: 0
@@ -1026,30 +964,15 @@ Transform:
   m_Children: []
   m_Father: {fileID: 180334801}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1511248129 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7127922288708492059, guid: 43e7d9db6dc865549b4e22730e115526, type: 3}
-  m_PrefabInstance: {fileID: 7041882349415200698}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1511248130 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5353735042321135347, guid: 43e7d9db6dc865549b4e22730e115526, type: 3}
   m_PrefabInstance: {fileID: 7041882349415200698}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1588580638 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5136432063744581632, guid: fe174d521ee56144483190125d682b9f, type: 3}
-  m_PrefabInstance: {fileID: 8028068117946266508}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1588580640 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6361924722186014533, guid: fe174d521ee56144483190125d682b9f, type: 3}
   m_PrefabInstance: {fileID: 8028068117946266508}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1811416392 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2083820334075035026, guid: 15f8101ea38ad23449e872740ee92616, type: 3}
-  m_PrefabInstance: {fileID: 6309994628947117441}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1811416393 stripped
 Transform:

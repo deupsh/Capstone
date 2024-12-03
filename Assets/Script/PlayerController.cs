@@ -21,30 +21,30 @@ public class PlayerData
 
 public class PlayerController : MonoBehaviour
 {
-    private float moveSpeed; // ±âº» ÀÌµ¿ ¼Óµµ
+    private float moveSpeed; // ê¸°ë³¸ ì´ë™ ì†ë„
 
     private Rigidbody2D rb;
     private Vector2 moveDirection;
 
     [Header("Tilemap Settings")]
-    public Tilemap tileMap; // Å¸ÀÏ¸Ê ÂüÁ¶
+    public Tilemap tileMap; // íƒ€ì¼ë§µ ì°¸ì¡°
 
     private PlayerStats playerStats;
 
     void Start()
     {
-        // Rigidbody2D ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿È
+        // Rigidbody2D ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì˜¤ê¸°
         rb = GetComponent<Rigidbody2D>();
 
         if (rb == null)
         {
-            Debug.LogError("Rigidbody2D°¡ Player ¿ÀºêÁ§Æ®¿¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("Rigidbody2Dê°€ Player ì»´í¬ë„ŒíŠ¸ì— ì—†ìŠµë‹ˆë‹¤.");
         }
 
-        // JSON¿¡¼­ ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ·Îµå
+        // JSONì—ì„œ í”Œë ˆì´ì–´ ë°ì´í„° ë¡œë“œ
         LoadPlayerData();
 
-        // ÃÊ±â ÀÌµ¿ ¼Óµµ ¼³Á¤
+        // ì´ˆê¸° ì´ë™ ì†ë„ ì„¤ì •
         if (playerStats != null)
         {
             moveSpeed = playerStats.SPEED;
@@ -53,11 +53,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // WASD ÀÔ·Â ¹Ş±â
+        // WASD ì…ë ¥ ë°›ê¸°
         float moveX = Input.GetAxis("Horizontal");
         float moveY = Input.GetAxis("Vertical");
 
-        moveDirection = new Vector2(moveX, moveY).normalized; // ¹æÇâ ¼³Á¤
+        moveDirection = new Vector2(moveX, moveY).normalized; // ë°©í–¥ ë²¡í„° ì •ê·œí™”
     }
 
     void FixedUpdate()
@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour
 
         if (rb != null)
         {
-            rb.velocity = moveDirection * moveSpeed;
+            rb.linearVelocity = moveDirection * moveSpeed;
         }
     }
 
@@ -74,22 +74,22 @@ public class PlayerController : MonoBehaviour
     {
         if (tileMap == null) return;
 
-        // ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ Å¸ÀÏ¸Ê ÁÂÇ¥·Î º¯È¯
+        // í”Œë ˆì´ì–´ ìœ„ì¹˜ë¥¼ íƒ€ì¼ë§µ ì¢Œí‘œë¡œ ë³€í™˜
         Vector3 playerPosition = transform.position;
         Vector3Int tilePosition = tileMap.WorldToCell(playerPosition);
 
-        // ÇöÀç Å¸ÀÏ °¡Á®¿À±â
+        // í˜„ì¬ íƒ€ì¼ ê°€ì ¸ì˜¤ê¸°
         TileBase currentTile = tileMap.GetTile(tilePosition);
 
         if (currentTile != null)
         {
             if (currentTile.name == "SwampTile2")
             {
-                moveSpeed = playerStats.SPEED - 9f; // ÀÌµ¿ ¼Óµµ °¨¼Ò
+                moveSpeed = playerStats.SPEED - 1f; // ì´ë™ ì†ë„ ê°ì†Œ
             }
             else
             {
-                moveSpeed = playerStats.SPEED; // ±âº» ¼Óµµ·Î º¹¿ø
+                moveSpeed = playerStats.SPEED; // ê¸°ë³¸ ì†ë„ë¡œ ì„¤ì •
             }
         }
     }
@@ -105,17 +105,16 @@ public class PlayerController : MonoBehaviour
 
             if (data.Player.Count > 0)
             {
-                playerStats = data.Player[0]; // Ã¹ ¹øÂ° ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ·Îµå
-                Debug.Log($"ÇÃ·¹ÀÌ¾î ÀÌ¸§: {playerStats.name}, HP: {playerStats.HP}, ATK: {playerStats.ATK}, SPEED: {playerStats.SPEED}");
+                playerStats = data.Player[0]; // ì²« ë²ˆì§¸ í”Œë ˆì´ì–´ ë°ì´í„° ë¡œë“œ
             }
             else
             {
-                Debug.LogError("ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ°¡ ºñ¾îÀÖ½À´Ï´Ù.");
+                Debug.LogError("í”Œë ˆì´ì–´ ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             }
         }
         else
         {
-            Debug.LogError("PlayerData.json ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("PlayerData.json íŒŒì¼ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 }
